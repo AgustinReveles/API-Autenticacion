@@ -1,25 +1,39 @@
-version : "3.5"
+version: '3.8'
+
 services:
-  mysql:
-    image: mysql:8
-    container_name: mysql 
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: api-oauth
+    container_name: api-oauth
+    restart: always
     ports:
-      - "3306:3306"
+      - "8001:9000"
+    volumes:
+      - .:/var/www
+    depends_on:
+      - db
     environment:
-      - MYSQL_ROOT_PASSWORD=root 
-      - MYSQL_DATABASE=laravel
-    volumes:
-      - "./mysql:/var/lib/mysql"
-  api:
-    depends_on:  
-      - mysql
-    image: ggmartinez/laravel:php-82
-    container_name: api 
+      DB_CONNECTION: sqlsrv
+      DB_HOST: db
+      DB_PORT: 1433
+      DB_DATABASE: oauth_db
+      DB_USERNAME: sa
+      DB_PASSWORD: StrongPassw0rd!
+
+  db:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: api-oauth-sqlserver
+    restart: always
+    environment:
+      ACCEPT_EULA: Y
+      SA_PASSWORD: StrongPassw0rd!
+      MSSQL_PID: Express
     ports:
-      - "8000:8000"
+      - "1433:1433"
     volumes:
-      - "./:/app"
+      - sqlserver_data:/var/opt/mssql
 
-
-
-
+volumes:
+  sqlserver_data:
