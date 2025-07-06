@@ -2,81 +2,60 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
 use App\Models\User;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Auth;
-use Lcobucci\JWT\Parser;
 use Illuminate\Support\Facades\Validator;
-
-
-
 
 class UserController extends Controller
 {
-    public function Register(Request $request){
-
-        $validation = Validator::make($request->all(),[
-            'name' => 'required|max:255',
-            'email' => 'required|email|unique:users',
-            'password' => 'required|confirmed'
+    public function register(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'name'     => 'required|max:255',
+            'email'    => 'required|email|unique:users',
+            'password' => 'required|confirmed|min:6',
         ]);
 
-        if($validation->fails())
-            return response($validation->errors(), 401);
-
-        return $this -> createUser($request);
-        
-    }
-
-    private function createUser($request){
-        $user = new User();
-        $user -> name = $request -> post("name");
-        $user -> email = $request -> post("email");
-        $user -> password = Hash::make($request -> post("password"));   
-        $user -> save();
-        return $user;
-    }
-
-    public function ValidateToken(Request $request){
-        return auth('api')->user();
-    }
-
-    public function Logout(Request $request){
-        $request->user()->token()->revoke();
-        return ['message' => 'Token Revoked'];
-        
-        
-    }
-
-    public function Login(Request $request)
-    {
-        $credentials = $request->only('email', 'password');
-
-        if (!auth()->attempt($credentials)) {
-            return response()->json(['error' => 'Credenciales inválidas'], 401);
+        if ($validator->fails()) {
+            return response()->json($validator->errors(), 422);
         }
 
-        $user = auth()->user();
-        $token = $user->createToken('access_token')->accessToken;
-
-        return response()->json([
-            'access_token' => $token,
-            'user' => $user
+        $user = User::create([
+            'name'     => $request->name,
+            'email'    => $request->email,
+            'password' => Hash::make($request->password),
         ]);
+
+        return response()->json(['message' => 'Usuario registrado correctamente', 'user' => $user], 201);
     }
 
-    public function Me(Request $request)
+    public function validateToken(Request $request)
+    {
+        return response()->json(['user' => $request->user()]);
+    }
+
+    public function logout(Request $request)
+    {
+        $request->user()->token()->revoke();
+        return response()->json(['message' => 'Token revocado']);
+    }
+
+    public function me(Request $request)
     {
         return response()->json($request->user());
     }
 
-    public function ChangePassword(Request $request)
+    public function changePassword(Request $request)
     {
-        $request->validate([
+        $validator = Validator::make($request->all(), [
             'current_password' => 'required',
-            'new_password' => 'required|min:6|confirmed',
+            'new_password'     => 'required|min:6|confirmed',
         ]);
+
+        if ($validator->fails()) {
+            return response()->json($validator->errors(), 422);
+        }
 
         $user = $request->user();
 
@@ -87,8 +66,6 @@ class UserController extends Controller
         $user->password = Hash::make($request->new_password);
         $user->save();
 
-        return response()->json(['message' => 'Contraseña actualizada']);
+        return response()->json(['message' => 'Contraseña actualizada correctamente']);
     }
-
-    
 }

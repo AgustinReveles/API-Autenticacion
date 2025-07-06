@@ -1,6 +1,5 @@
 <?php
 
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\UserController;
 
@@ -16,9 +15,8 @@ use App\Http\Controllers\UserController;
 */
 
 
-Route::post('/user',[UserController::class,"Register"]);
-Route::get('/validate',[UserController::class,"ValidateToken"])->middleware('auth:api');
-Route::get('/logout',[UserController::class,"Logout"])->middleware('auth:api');
-Route::post('/login', [UserController::class, 'Login']);
-Route::get('/me', [UserController::class, 'Me'])->middleware('auth:api');
-Route::post('/change-password', [UserController::class, 'ChangePassword'])->middleware('auth:api');
+Route::post('/register', [UserController::class, 'register']);
+Route::middleware('auth:api')->get('/validate', [UserController::class, 'validateToken']);
+Route::middleware('auth:api')->post('/logout', [UserController::class, 'logout']);
+Route::middleware('auth:api')->get('/me', [UserController::class, 'me']);
+Route::middleware('auth:api')->post('/change-password', [UserController::class, 'changePassword']);
