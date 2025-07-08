@@ -14,11 +14,11 @@ use App\Http\Controllers\UserController;
 |
 */
 
-Route::post('/oauth/token',     [AccessTokenController::class,'issueToken']);
-Route::post('/register',        [UserController::class,'register']);
+Route::post('/register', [UserController::class,'register']);
+Route::post('/oauth/token', [\Laravel\Passport\Http\Controllers\AccessTokenController::class, 'issueToken']);
 Route::middleware('auth:api')->group(function () {
-    Route::get ('/validate',    [UserController::class,'validateToken']);
-    Route::get ('/me',          [UserController::class,'me']);
-    Route::post('/logout',      [UserController::class,'logout']);
-    Route::post('/change-password',[UserController::class,'changePassword']);
+    Route::get ('/validate',           [UserController::class, 'validateToken']);
+    Route::post('/logout',             [UserController::class, 'logout']);
+    Route::get ('/me',                 [UserController::class, 'me']);
+    Route::post('/change-password',    [UserController::class, 'changePassword']);
 });
